@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: mongodb-atlas-kinesis-data-firehose-api
+    Description: >
+      This is a SAM project for a Python MongoDB Kinesis Data Firehose API.
+    Author: MongoDb
+    SpdxLicenseId: Apache-2.0
+    LicenseUrl: LICENSE.txt
+    ReadmeUrl: readme.md
+    Labels: ['Mongodb']
+    HomePageUrl: https://github.com/mongodb-partners/MongoDB-Kinesis-Transformation
+    SemanticVersion: 0.0.1
+    SourceCodeUrl: https://github.com/mongodb-partners/MongoDB-Kinesis-Transformation
+Parameters:
+
+  ConnectionString:
+    Type: String
+    Description: >
+      The connection string for MongoDB Atlas.
+    Default: ""
+
+  DBName:
+    Type: String
+    Description: >
+      Mongodb database name
+    Default: "test"
+
+  CollectionName:
+    Type: String
+    Description: >
+      Mongodb collection name, where you want to save data
+    Default: "test"
+
+
+Resources:
+
+  CRUDLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.10
+      Timeout: 15
+      CodeUri: ./lambda/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          ATLAS_CONNECTION_STRING: !Ref ConnectionString
+          COLLECTION_NAME: !Ref CollectionName
+          DB_NAME: !Ref DBName
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+
+Outputs:
+  WebEndpoint:
+    Description: API Gateway endpoint URL for Prod stage
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
