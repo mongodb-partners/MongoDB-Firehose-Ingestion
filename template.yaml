@@ -54,10 +54,37 @@ Resources:
         GetEvent:
           Type: Api
           Properties:
+            RestApiId: !Ref ServerlessRest
             Path: /
             Method: ANY
+            Auth:
+              ApiKeyRequired: true
+
+  ServerlessRest:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        ApiKeyRequired: true
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          Description: Usage plan for this API
+          Quota:
+            Limit: 500
+            Period: MONTH
+          Throttle:
+            BurstLimit: 100
+            RateLimit: 50
+
 
 Outputs:
   WebEndpoint:
     Description: API Gateway endpoint URL for Prod stage
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Value: !Sub "https://${ServerlessRest}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  ApiKeyValue:
+    Description: API Key
+    Value: !Sub "key: ${ServerlessRestApiKey} "
+  ApiKeyUrl:
+    Description: "Key URL"
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/apigateway/main/api-keys/${ServerlessRestApiKey}?api=unselected&region=${AWS::Region}"
+  
