@@ -36,6 +36,16 @@ Parameters:
 
 
 Resources:
+  AuthorizerLambda:
+      Type: AWS::Serverless::Function
+      Properties:
+        Runtime: python3.10
+        Timeout: 15
+        CodeUri: ./authorizer/
+        Handler: app.lambda_handler
+        Environment:
+          Variables:
+            VALID_KEYS: "FIXME"
 
   CRUDLambda:
     Type: AWS::Serverless::Function
@@ -83,7 +93,7 @@ Outputs:
     Value: !Sub "https://${ServerlessRest}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
   ApiKeyValue:
     Description: API Key
-    Value: !Sub "key: ${ServerlessRestApiKey} "
+    Value: !Sub "key: ${ServerlessRestApiKey}"
   ApiKeyUrl:
     Description: "Key URL"
     Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/apigateway/main/api-keys/${ServerlessRestApiKey}?api=unselected&region=${AWS::Region}"
