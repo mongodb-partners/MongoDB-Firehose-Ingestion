@@ -57,11 +57,10 @@ def lambda_handler(event, context):
         db = client[DB_NAME]
         collection = db[COLLECTION_NAME]
 
-        full_document = json.loads(event["body"])
-        logger.info(f"got full_document: {full_document}")
+        logger.info(f"connected to the database...")
 
         documents_to_insert = []
-        for record in full_document['records']:
+        for record in event['records']:
             # Decode base64 data and parse JSON
             document = json.loads(decode_base64_builtin(record['data']))
             documents_to_insert.append(document)
