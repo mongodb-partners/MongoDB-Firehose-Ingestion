@@ -75,7 +75,7 @@ Resources:
     Properties:
       StageName: Prod
       Auth:
-        ApiKeyRequired: true
+        ApiKeyRequired: false
         UsagePlan:
           CreateUsagePlan: PER_API
           Description: Usage plan for this API
@@ -103,8 +103,18 @@ Outputs:
     Value: !Sub "https://${ServerlessRest}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
   ApiKeyValue:
     Description: API Key
-    Value: !Sub "key: ${ServerlessRestApiKey}"
+    Value: !Sub "${ServerlessRestApiKey}"
   ApiKeyUrl:
     Description: "Key URL"
     Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/apigateway/main/api-keys/${ServerlessRestApiKey}?api=unselected&region=${AWS::Region}"
+  LambdaAuthorizer:
+    Description: "Authorizer Lambda"
+    Value: !Sub "${AuthorizerLambda}"
+  ServerlessRestAPI:
+    Description: "Serverless Rest API"
+    Value: !Sub "${ServerlessRest}"
+  ApiResourceId:
+    Description: "API Gateway Resource ID"
+    Value: !GetAtt ServerlessRest.RootResourceId   # For the root resource
+
   
