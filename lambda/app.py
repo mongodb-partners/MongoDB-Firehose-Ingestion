@@ -4,6 +4,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 import base64
 import logging
+import traceback
 
 # Configure logger
 logger = logging.getLogger('mongodb_handler')
@@ -59,8 +60,11 @@ def lambda_handler(event, context):
 
         logger.info(f"connected to the database...")
 
+        full_document = json.loads(event["body"])
+        logger.info(f"got full_document: {full_document}")
+
         documents_to_insert = []
-        for record in event['records']:
+        for record in full_document['records']:
             # Decode base64 data and parse JSON
             document = json.loads(decode_base64_builtin(record['data']))
             documents_to_insert.append(document)
@@ -79,6 +83,7 @@ def lambda_handler(event, context):
 
     except Exception as e:
         logger.error(f"Error processing event: {str(e)}")
+        logger.error(traceback.format_exc())
         return error_response(e)
 
     finally:

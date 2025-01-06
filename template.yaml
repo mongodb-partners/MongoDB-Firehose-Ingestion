@@ -85,6 +85,16 @@ Resources:
           Throttle:
             BurstLimit: 100
             RateLimit: 50
+        Authorizers:
+          LambdaRequestAuthorizer:
+            FunctionArn: !GetAtt AuthorizerLambda.Arn  # Reference to your Lambda function
+            Identity:
+              Headers:
+                - X-Amz-Firehose-Access-Key  # The header containing the token
+            AuthorizerResultTtlInSeconds: 300  # Cache authorization results for 5 minutes
+            FunctionPayloadType: REQUEST       # Can be TOKEN or REQUEST
+        DefaultAuthorizer: LambdaRequestAuthorizer  # Makes this the default authorizer for all routes
+
 
 
 Outputs:
