@@ -1,10 +1,22 @@
-import json
 import os
 import logging
+import boto3
 
 # Configure logger
 logger = logging.getLogger('mongodb_authorizer')
 logger.setLevel(logging.INFO)
+
+def get_api_key_by_id(api_key_id):
+    # Create API Gateway client
+    client = boto3.client('apigateway')
+    
+    # Get API key details
+    response = client.get_api_key(
+        apiKey=api_key_id,
+        includeValue=True  # Set to True to include the actual key value
+    )
+    
+    return response.get('value')
 
 def lambda_handler(event, context):
     logger.info(f"Got Event: {event} ")
@@ -12,10 +24,10 @@ def lambda_handler(event, context):
     custom_header = event['headers'].get('X-Amz-Firehose-Access-Key')
     
     # List of valid API keys
-    valid_api_keys = os.environ['VALID_KEYS']  # Replace with actual keys
+    valid_api_key = get_api_key_by_id(os.environ['API_KEY_ID'])
 
     # Validate the API key
-    if custom_header == valid_api_keys:
+    if custom_header == valid_api_key:
         logger.info('KEY IS VALID')
         return generate_policy('user', 'Allow', event['methodArn'])
     else:

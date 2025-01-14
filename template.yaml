@@ -36,16 +36,51 @@ Parameters:
 
 
 Resources:
+  AuthorizerLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-authorizer-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: ApiGatewayAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - apigateway:GET
+                  - apigateway:GetApiKey
+                Resource: !Sub arn:aws:apigateway:${AWS::Region}::/apikeys/*
+        - PolicyName: LambdaLogging
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*
+
   AuthorizerLambda:
       Type: AWS::Serverless::Function
       Properties:
+        Role: !GetAtt AuthorizerLambdaRole.Arn
         Runtime: python3.10
         Timeout: 15
         CodeUri: ./authorizer/
         Handler: app.lambda_handler
         Environment:
           Variables:
-            VALID_KEYS: "FIXME"
+            API_KEY_ID: "DEFAULT"
 
   CRUDLambda:
     Type: AWS::Serverless::Function
@@ -116,5 +151,6 @@ Outputs:
   ApiResourceId:
     Description: "API Gateway Resource ID"
     Value: !GetAtt ServerlessRest.RootResourceId   # For the root resource
-
-  
+  AuthorizerLambdaRoleName:
+    Description: "Name of the IAM role created for the Authorizer Lambda"
+    Value: !Ref AuthorizerLambdaRole
