@@ -1,6 +1,7 @@
 #!/bin/bash
 
-sam build && sam deploy --capabilities CAPABILITY_NAMED_IAM
+# Remove in cloudshell
+# sam build && sam deploy --capabilities CAPABILITY_NAMED_IAM
 
 STACK_NAME="kinesis-mdb-lambda"
 
