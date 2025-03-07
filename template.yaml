@@ -5,37 +5,44 @@ Metadata:
   AWS::ServerlessRepo::Application:
     Name: mongodb-atlas-kinesis-data-firehose-api
     Description: >
-      This is a SAM project for a Python MongoDB Kinesis Data Firehose API.
-    Author: MongoDb
+      This is a serverless Python application that enables you to push data from Kinesis Data Firehose to your MongoDB Atlas cluster.
+    Author: Anuj Panchal
     SpdxLicenseId: Apache-2.0
     LicenseUrl: LICENSE.txt
-    ReadmeUrl: readme.md
-    Labels: ['Mongodb']
+    ReadmeUrl: README.md
+    Labels: ['MongoDB', 'Firehose', 'Kinesis', 'Python']
     HomePageUrl: https://github.com/mongodb-partners/MongoDB-Kinesis-Transformation
-    SemanticVersion: 0.0.1
+    SemanticVersion: 1.0.0
     SourceCodeUrl: https://github.com/mongodb-partners/MongoDB-Kinesis-Transformation
-Parameters:
 
+Parameters:
   ConnectionString:
     Type: String
     Description: >
       The connection string for MongoDB Atlas.
     Default: ""
-
+    
   DBName:
     Type: String
     Description: >
-      Mongodb database name
+      MongoDB database name.
     Default: "test"
 
   CollectionName:
     Type: String
     Description: >
-      Mongodb collection name, where you want to save data
+      MongoDB collection name where you want to save data.
     Default: "test"
 
-
 Resources:
+  # This resource stores the connection string as a secret in Secrets Manager.
+  ConnectionStringSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "${AWS::StackName}-ConnectionString"
+      Description: "Connection string for MongoDB Atlas"
+      SecretString: !Ref ConnectionString
+
   AuthorizerLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -69,32 +76,57 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*
+  
+  IngestionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-ingestion-lambda-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: SecretsManagerAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${AWS::StackName}*"
 
   AuthorizerLambda:
-      Type: AWS::Serverless::Function
-      Properties:
-        Role: !GetAtt AuthorizerLambdaRole.Arn
-        Runtime: python3.10
-        Timeout: 15
-        CodeUri: ./authorizer/
-        Handler: app.lambda_handler
-        Environment:
-          Variables:
-            API_KEY_ID: "DEFAULT"
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt AuthorizerLambdaRole.Arn
+      Runtime: python3.9
+      Timeout: 30
+      CodeUri: ./authorizer/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          API_KEY_ID: "DEFAULT"
 
   CRUDLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.10
-      Timeout: 15
+      Role: !GetAtt IngestionLambdaRole.Arn
+      Runtime: python3.9
+      Timeout: 30
       CodeUri: ./lambda/
       Handler: app.lambda_handler
       Environment:
         Variables:
-          ATLAS_CONNECTION_STRING: !Ref ConnectionString
           COLLECTION_NAME: !Ref CollectionName
           DB_NAME: !Ref DBName
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+          REGION_NAME: !Ref AWS::Region
+          SECRET_NAME: !Sub "${AWS::StackName}-ConnectionString"
       Events:
         GetEvent:
           Type: Api
@@ -122,15 +154,13 @@ Resources:
             RateLimit: 50
         Authorizers:
           LambdaRequestAuthorizer:
-            FunctionArn: !GetAtt AuthorizerLambda.Arn  # Reference to your Lambda function
+            FunctionArn: !GetAtt AuthorizerLambda.Arn
             Identity:
               Headers:
-                - X-Amz-Firehose-Access-Key  # The header containing the token
-            AuthorizerResultTtlInSeconds: 300  # Cache authorization results for 5 minutes
-            FunctionPayloadType: REQUEST       # Can be TOKEN or REQUEST
-        DefaultAuthorizer: LambdaRequestAuthorizer  # Makes this the default authorizer for all routes
-
-
+                - X-Amz-Firehose-Access-Key
+            AuthorizerResultTtlInSeconds: 300
+            FunctionPayloadType: REQUEST
+        DefaultAuthorizer: LambdaRequestAuthorizer
 
 Outputs:
   WebEndpoint:
@@ -150,7 +180,16 @@ Outputs:
     Value: !Sub "${ServerlessRest}"
   ApiResourceId:
     Description: "API Gateway Resource ID"
-    Value: !GetAtt ServerlessRest.RootResourceId   # For the root resource
+    Value: !GetAtt ServerlessRest.RootResourceId
   AuthorizerLambdaRoleName:
     Description: "Name of the IAM role created for the Authorizer Lambda"
     Value: !Ref AuthorizerLambdaRole
+  DeployedRegion:
+    Description: "The AWS region in which the app is deployed"
+    Value: !Ref AWS::Region
+  IngestionLambdaRoleName:
+    Description: "Name of the IAM role created for the Ingestion Lambda"
+    Value: !Ref IngestionLambdaRole
+  ConnectionStringSecretName:
+    Description: "Name of the secret created for the MongoDB connection string"
+    Value: !Ref ConnectionStringSecret

@@ -5,16 +5,36 @@ from bson import ObjectId
 import base64
 import logging
 import traceback
+import boto3
 
 # Configure logger
 logger = logging.getLogger('mongodb_handler')
 logger.setLevel(logging.INFO)
 
+def get_secret(secret_name, region_name):
+    # Create a Secrets Manager client
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
+    )
+
+    try:
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+    except Exception as e:
+        # Handle specific exceptions as needed
+        raise e
+
+    # Secrets Manager can return either a string or binary secret
+    if 'SecretString' in get_secret_value_response:
+        return get_secret_value_response['SecretString']
+    else:
+        return base64.b64decode(get_secret_value_response['SecretBinary']).decode('utf-8')
+
 # Environment variables
-ATLAS_CONNECTION_STRING = os.environ['ATLAS_CONNECTION_STRING']
+ATLAS_CONNECTION_STRING = get_secret(os.environ['SECRET_NAME'], os.environ['REGION_NAME'])
 COLLECTION_NAME = os.environ['COLLECTION_NAME']
 DB_NAME = os.environ['DB_NAME']
-
 
 def connect_to_mongodb():
     return MongoClient(ATLAS_CONNECTION_STRING)
