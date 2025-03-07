@@ -80,7 +80,7 @@ Resources:
   IngestionLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-ingestion-lambda-role
+      RoleName: !Sub ${AWS::StackName}-ingestion-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
