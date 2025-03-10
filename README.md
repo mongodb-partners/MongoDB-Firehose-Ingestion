@@ -46,3 +46,6 @@ You have to create a Kinesis Data Firehose stream that will help in moving the d
 - In your Firehose stream, click on **Start sending demo data** under the **Test with demo data** section
 ![Test-with-demo-data](/images/Test-with-demo-data.png)
 - Go to your MongoDB Atlas cluster and check whether you're able to see the records being inserted in your collection
+
+### Note
+- For demo purposes, we have allowed access from anywhere `(0.0.0.0/0)` under the Network Access section of MongoDB Atlas Project. We would strictly not recommend this for production scenarios. For production usage, kindly establish a [Private Endpoint](https://www.mongodb.com/docs/atlas/security-cluster-private-endpoint/#follow-these-steps). 
