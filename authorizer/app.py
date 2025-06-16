@@ -5,11 +5,10 @@ import boto3
 # Configure logger
 logger = logging.getLogger('mongodb_authorizer')
 logger.setLevel(logging.INFO)
+# Create API Gateway client
+client = boto3.client('apigateway')
 
 def get_api_key_by_id(api_key_id):
-    # Create API Gateway client
-    client = boto3.client('apigateway')
-    
     # Get API key details
     response = client.get_api_key(
         apiKey=api_key_id,
@@ -52,5 +51,5 @@ def generate_policy(principal_id, effect, resource):
             ]
         }
         auth_response['policyDocument'] = policy_document
-    logger.info("Auth Reponse: ", auth_response)
+    logger.info(f"Auth Response: {auth_response}")
     return auth_response

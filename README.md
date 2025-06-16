@@ -36,7 +36,7 @@ You have to create a Kinesis Data Firehose stream that will help in moving the d
 ![Deploy-App](/images/Deploy-App.png)
 - Go to **Outputs** section of your stack in the cloudformation console and check the outputs of the resources deployed. Keep this tab open
 ![CF-stack-output](/images/CF-Stack-Output.png)
-- Copy the API Key ID mentioned in the Value column alongside the **ApiKeyValue** key. Go to the **Lambda > Select the Authorizer Lambda function > Environment Variables > Paste the copied API Key ID there**
+- Copy the value of **ApiKeyValue** mentioned in the Value column. Go to the **Lambda > Select the Authorizer Lambda function > Environment Variables > Paste the copied API Key ID there**
 - Go to API Gateway console, click on **Resources > ANY > Click on Edit under Method request settings**. Disable the `API key required` flag. After saving the changes, **Deploy API** for `Prod` stage for the changes to take effect
 ![API-Key-required](/images/APi-Key-Reqd-Flag.png)
 - Copy the **API Gateway endpoint URL for Prod stage** from the cloudformation Outputs section and copy the **API Key value** from the **API Keys** section in the API Gateway

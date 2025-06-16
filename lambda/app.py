@@ -4,6 +4,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 import base64
 import logging
+import time
 import traceback
 import boto3
 
@@ -37,14 +38,18 @@ COLLECTION_NAME = os.environ['COLLECTION_NAME']
 DB_NAME = os.environ['DB_NAME']
 
 def connect_to_mongodb():
-    return MongoClient(ATLAS_CONNECTION_STRING)
+    return MongoClient(ATLAS_CONNECTION_STRING, tls=True)
 
 # client = MongoClient(host = ATLAS_CONNECTION_STRING)
 
-def success_response(body):
+def success_response(body, request_id):
+    response_to_firehose = {
+            'requestId': request_id,
+            'timestamp': int(time.time() * 1000)
+    }
     return {
         'statusCode': '200',
-        'body': json.dumps(body),
+        'body': json.dumps(response_to_firehose),
         'headers': {
             'Content-Type': 'application/json',
         },
@@ -81,6 +86,9 @@ def lambda_handler(event, context):
         logger.info(f"connected to the database...")
 
         full_document = json.loads(event["body"])
+        firehose_request_id = full_document['requestId']
+        firehose_request_id_timestamp = full_document['timestamp']
+
         logger.info(f"got full_document: {full_document}")
 
         documents_to_insert = []
@@ -99,7 +107,7 @@ def lambda_handler(event, context):
             response = {'inserted_count': 0}
         
         logger.info("finished processing event")
-        return success_response(response)
+        return success_response(response, firehose_request_id)
 
     except Exception as e:
         logger.error(f"Error processing event: {str(e)}")
