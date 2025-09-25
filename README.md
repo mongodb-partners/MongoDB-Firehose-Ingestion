@@ -12,17 +12,6 @@ Before proceeding, ensure you have the following prerequisites in place:
 - This application requires a minimum version of Python 3.9 to run. You can install Python 3.9 from [Install Python](https://www.python.org/downloads/)
 - A Firehose Stream that will help you move data from source to destination. For this case, our source is `Direct PUT` and destination is `HTTP Endpoint`. To create your Firehose stream, refer [documentation](https://docs.aws.amazon.com/firehose/latest/dev/basic-create.html)
 
-#### Create a Kinesis Data Firehose Stream
-You have to create a Kinesis Data Firehose stream that will help in moving the data from configured source to destination:
-
-- Click [here](https://us-east-1.console.aws.amazon.com/firehose/home?region=us-east-1#/streams) to go to Kinesis Data Firehose console
-- Click on `Create Firehose stream`
-- Select your desired source of data using the `Source` dropdown
-- Select `HTTP Endpoint` option in the `Destination` dropdown
-- Enter the API Gateway URL that we created in the previous step in the `HTTP Endpoint URL` field
-- Copy the API Key value generated in the previous step and paste it in the `Access Key` field
-- Under the `Backup Settings` section, configure a S3 bucket to store the source record backup if the data transformation doesn't produce the desired results
-
 ### Usage 
 ---
 
@@ -41,11 +30,24 @@ You have to create a Kinesis Data Firehose stream that will help in moving the d
 ![API-Key-required](/images/APi-Key-Reqd-Flag.png)
 - Copy the **API Gateway endpoint URL for Prod stage** from the cloudformation Outputs section and copy the **API Key value** from the **API Keys** section in the API Gateway
 ![Copy-API-Key](/images/Copy-API-Key.png)
-- Go to the Firehose console and click on the stream that you created then go to **Configuration > Under the Destination Settings** section click on **Edit**. Paste the **API Key Value** and the **API Gateway Web Endpoint** in the fields highlighted below and click on Save changes
+
+- Go to the Firehose console and then follow the instructions mentioned [here](#create-firehose-stream) to create a firehose stream. After creating the firehose stream, go to **Configuration > Under the Destination Settings** section click on **Edit**. Paste the **API Key Value** and the **API Gateway Web Endpoint** in the fields highlighted below and click on Save changes
 ![Firehose-Destination-Settings](/images/Firehose-Destination-Settings.png)
 - In your Firehose stream, click on **Start sending demo data** under the **Test with demo data** section
 ![Test-with-demo-data](/images/Test-with-demo-data.png)
 - Go to your MongoDB Atlas cluster and check whether you're able to see the records being inserted in your collection
+
+<a name="create-firehose-stream"></a>
+#### Create a Kinesis Data Firehose Stream
+You have to create a Kinesis Data Firehose stream that will help in moving the data from configured source to destination:
+
+- Click [here](https://us-east-1.console.aws.amazon.com/firehose/home?region=us-east-1#/streams) to go to Kinesis Data Firehose console
+- Click on `Create Firehose stream`
+- Select your desired source of data using the `Source` dropdown
+- Select `MongoDB Atlas` option in the `Destination` dropdown
+- Enter the API Gateway URL that we created in the previous step in the `HTTP Endpoint URL` field
+- Copy the API Key value generated in the previous step and paste it in the `Access Key` field
+- Under the `Backup Settings` section, configure a S3 bucket to store the source record backup if the data transformation doesn't produce the desired results
 
 ### Note
 - For demo purposes, we have allowed access from anywhere `(0.0.0.0/0)` under the Network Access section of MongoDB Atlas Project. We would strictly not recommend this for production scenarios. For production usage, kindly establish a [Private Endpoint](https://www.mongodb.com/docs/atlas/security-cluster-private-endpoint/#follow-these-steps). 
