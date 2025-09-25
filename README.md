@@ -11,6 +11,10 @@ Before proceeding, ensure you have the following prerequisites in place:
 - [Install SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
 - This application requires a minimum version of Python 3.9 to run. You can install Python 3.9 from [Install Python](https://www.python.org/downloads/)
 
+### Architecture
+
+![Architecture-Diagram](/images/Firehose%20-%20Atlas%20-%20Ingestion.png)
+
 ### Usage 
 ---
 
