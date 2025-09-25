@@ -10,7 +10,6 @@ Before proceeding, ensure you have the following prerequisites in place:
 - Configure AWS CLI using `aws configure` with Account Id, Access Key, Secret Key, and Region
 - [Install SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
 - This application requires a minimum version of Python 3.9 to run. You can install Python 3.9 from [Install Python](https://www.python.org/downloads/)
-- A Firehose Stream that will help you move data from source to destination. For this case, our source is `Direct PUT` and destination is `HTTP Endpoint`. To create your Firehose stream, refer [documentation](https://docs.aws.amazon.com/firehose/latest/dev/basic-create.html)
 
 ### Usage 
 ---
